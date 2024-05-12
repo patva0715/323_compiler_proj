@@ -1,15 +1,12 @@
-  $
-    [* NO function definitions *]
-    $
-    integer  i, max, sum;    [* declarations *]
-    $
-    sum = 0;
-    i = 1;
- scan (max);
-while (i ==  max)  {
-          sum = sum + i;
-          i  = i + 1; 
-     }
-      endwhile    
-      print(sum+max);
-     $
+$
+$
+integer c,z ;
+$
+
+c = 10 - 5;
+scan(z);
+if(z>c){
+    print(z);
+}endif
+
+$

@@ -2,6 +2,31 @@ from    lexical_analyzer import lexical_analyzer
 from util import *
 import sys
 
+class SymbolTable:
+    def __init__(self):
+        self.table = {}
+        self.address = 5000
+
+    def add(self, identifier, typ):
+        if identifier in self.table:
+            raise ValueError(f"Duplicate identifier '{identifier}'.")
+        self.table[identifier] = (typ, self.address)
+        self.address += 1
+
+    def lookup(self, identifier):
+        if identifier not in self.table:
+            raise ValueError(f"Identifier '{identifier}' not declared.")
+        return self.table[identifier][1]
+    
+    def curr_addr(self):
+        return self.address
+    
+    def print_table(self):
+        for id, (typ, addr) in self.table.items():
+            print(f"{id}: Type={typ}, Address={addr}")
+
+ids_table = SymbolTable
+        
 identifiers={}
 mem_address = 5000
 jumpstack=[]
@@ -12,12 +37,15 @@ def generate_instruction(op,oprnd):
     try:
         global instr_address
         inst [instr_address]=(instr_address,op,oprnd)
+        # print(inst)
         instr_address+=1
     except Exception as e:
         print(e)
 
 def get_Address(x):
-    return identifiers[x]
+    # DIVIDER
+    return ids_table.lookup(x)[1]
+    # return identifiers[x]
 
 def back_patch (jump_address):
     try:
@@ -25,6 +53,7 @@ def back_patch (jump_address):
         new = (inst[addr][0],inst[addr][1],jump_address)
         inst[addr] = new
     except Exception as e:
+        print("ERROOROROROROR\n\n\nOROO")
         print(e)
 
 class Lexer:
@@ -203,9 +232,7 @@ def parameter(lex):
 
 # <Qualifier> -> integer | boolean | real
 def qualifier(lex):
-
     if lex.current[1] in {"integer","boolean","real"}:
-
         output= f"<Qualifier> -> {lex.current[1]}\n"
         lex.goNext()
         output += lex.current_token_header()
@@ -233,22 +260,24 @@ def declaration_list_prime(lex):
     
 # <Declaration> -> <Qualifier><IDs>
 def declaration(lex):
-
     output="<Declaration> -> <Qualifier><IDs>\n"
+    qual = lex.current[1]
     output+=qualifier(lex)
-    output+=ids(lex)
+    output+=ids(lex,qual)
     return output
 
 # <IDs> -> <Identifier> <IDs Prime>
-def ids(lex):
+def ids(lex,qual):
     output="<IDs> -> <Identifier> <IDs Prime>\n"
-
+    print(lex.current)
     if lex.current[0] != "Identifier":
         raise Exception("Error in ids()")
     # TODO
     global mem_address
-    identifiers[lex.current[1]]=mem_address
-    mem_address+=1
+    # DIVIDER
+    # identifiers[lex.current[1]]=mem_address
+    # mem_address+=1
+    ids_table.add(qual,lex.current[1])
     lex.goNext()
     output+=lex.current_token_header()
     output+=ids_prime(lex)
@@ -269,7 +298,6 @@ def ids_prime(lex):
 
 # <Statement List> -> <Statement> <Statement List Prime>
 def statement_list(lex):
-
     output = "<Statement List> -> <Statement><Statement List Prime>\n"
 
     output += statement(lex)
@@ -368,14 +396,6 @@ def assign(lex):
     if lex.getCurrent()[0] == "Identifier":
         # TODO SAVE TOKEN HERE FOR LATER USE
         save = lex.getCurrent()
-        global mem_address
-        if(identifiers[save[1]]):
-            pass
-        else:
-            print("ID not declared")
-            raise Exception("ID not declared")
-            # identifiers[save[1]] = mem_address 
-            # mem_address+=1
         output += "<Assign> -> Identifier = <Expression>;\n"
         lex.goNext()
         if lex.current[1] != "=":
@@ -385,12 +405,12 @@ def assign(lex):
         output += lex.current_token_header()
         output += expression(lex)
         # TODO GENERATE INSTURUCTION HERE
-        # global mem_address
-        # if(identifiers[save[1]]):
-        #     pass
-        # else:
-        #     identifiers[save[1]] = mem_address 
-        #     mem_address+=1
+        global mem_address
+        if(identifiers[save[1]]):
+            pass
+        else:
+            identifiers[save[1]] = mem_address 
+            mem_address+=1
         generate_instruction("POPM",get_Address(save[1]))
 
         if lex.current[1] != ";":
@@ -413,26 +433,26 @@ def expression(lex):
 # Expression' = +Term  Expression' | -Term  Expression' | Epsilon
 def expresssion_prime(lex):
     output = ""
-    print(lex.getCurrent())
-    print("xxx")
     if lex.getCurrent()[1] in {"-", "+"}:
         if lex.getCurrent()[1] == "-":
             # TODO
+            # generate_instruction("S","nil")
             output += "<Expression Prime> -> - <Term><Expression Prime>\n"
         else:
             # TODO
+            # generate_instruction("A","nil")
             output += "<Expression Prime> -> + <Term><Expression Prime>\n"
         lex.goNext()
         output += lex.current_token_header()
         output += term(lex)
-        print(lex.getCurrent())
-        print("xxx")
         if lex.getCurrent()[1] == "-":
             # TODO
             generate_instruction("S","nil")
+            # output += "<Expression Prime> -> - <Term><Expression Prime>\n"
         else:
             # TODO
             generate_instruction("A","nil")
+            # output += "<Expression Prime> -> + <Term><Expression Prime>\n"
 
         output += expresssion_prime(lex)
         return output
@@ -453,24 +473,17 @@ def term(lex):
 def term_prime(lex):
     output = ""
     if lex.getCurrent()[1] in {"*", "/"}:
-        op = lex.getCurrent()[1]
         if lex.getCurrent()[1] == "/":
             # TODO
-            # generate_instruction("D","nil")
+            generate_instruction("D","nil")
             output += "<Term Prime> -> /<Factor><Term Prime>\n"
         else:
             # TODO
-            # generate_instruction("M","nil")
+            generate_instruction("M","nil")
             output += "<Term Prime> -> *<Factor><Term Prime>\n"
         lex.goNext()
         output += lex.current_token_header()
         output += factor(lex)
-        if op == "/":
-            # TODO
-            generate_instruction("D","nil")
-        else:
-            # TODO
-            generate_instruction("M","nil")
         # generate_instruction("A","nil")
         output += term_prime(lex)
         return output
@@ -741,9 +754,7 @@ def if_rule(lex):
     lex.goNext()
     output += lex.current_token_header()
     output += statement(lex)
-    back_patch(instr_address)
     output += if_prime(lex)
-
     return output
 
 # <If Prime> -> endif | else <Statement> endif
@@ -762,8 +773,6 @@ def if_prime(lex):
         return output
     except:
         output += "<If Prime> -> endif\n"
-        # TODO
-        generate_instruction("LABEL","nil")
         output+=lex.goNext()
         return output
 # DIVIDER
@@ -784,7 +793,7 @@ def syntax_analyzer(input_file,output_file):
         for x in inst:
             if x:
                 print(f'{x[0]}'.ljust(2)+f' {x[1]}'.ljust(9),end='')
-                print(f'{x[2]}' if x[2]!='nil'else 'nil')
+                print(f'{x[2]}' if x[2]!='nil'else '')
             # else:
             #     print()
     except Exception as e:
