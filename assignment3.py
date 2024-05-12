@@ -2,31 +2,54 @@ from    lexical_analyzer import lexical_analyzer
 from util import *
 import sys
 
-dict={}
+# class SymbolTable:
+#     def __init__(self):
+#         self.table = {}
+#         self.address = 5000
+
+#     def add(self, identifier, typ):
+#         if identifier in self.table:
+#             raise ValueError(f"Duplicate identifier '{identifier}'.")
+#         self.table[identifier] = (typ, self.address)
+#         self.address += 1
+
+#     def lookup(self, identifier):
+#         if identifier not in self.table:
+#             raise ValueError(f"Identifier '{identifier}' not declared.")
+#         return self.table[identifier][1]
+
+#     def print_table(self):
+#         for id, (typ, addr) in self.table.items():
+#             print(f"{id}: Type={typ}, Address={addr}")
+
+# ids_table = SymbolTable
+        
+identifiers={}
 mem_address = 5000
-STACK = []
-MEMORY = []
-inst = [None] *10
+jumpstack=[]
+inst = [None] *100
 instr_address=1
 
 def generate_instruction(op,oprnd):
     try:
         global instr_address
         inst [instr_address]=(instr_address,op,oprnd)
-        print(inst)
+        # print(inst)
         instr_address+=1
     except Exception as e:
         print(e)
 
 def get_Address(x):
-    return dict[x]
+    return identifiers[x]
 
-class Instruction:
-    def __init__ (self,address,op,oprnd):
-        self.address = address
-        self.op = op
-        self.oprnd=oprnd
-        return (self,address,self.op,self.oprnd)
+def back_patch (jump_address):
+    try:
+        addr = jumpstack.pop()
+        new = (inst[addr][0],inst[addr][1],jump_address)
+        inst[addr] = new
+    except Exception as e:
+        print("ERROOROROROROR\n\n\nOROO")
+        print(e)
 
 class Lexer:
     def __init__(self, tokens) -> None:
@@ -240,8 +263,13 @@ def declaration(lex):
 # <IDs> -> <Identifier> <IDs Prime>
 def ids(lex):
     output="<IDs> -> <Identifier> <IDs Prime>\n"
+    print(lex.current)
     if lex.current[0] != "Identifier":
         raise Exception("Error in ids()")
+    # TODO
+    global mem_address
+    identifiers[lex.current[1]]=mem_address
+    mem_address+=1
     lex.goNext()
     output+=lex.current_token_header()
     output+=ids_prime(lex)
@@ -351,13 +379,14 @@ def print_rule(lex):
             raise Exception("Error in print()")
         lex.goNext()
         output += lex.current_token_header()
+        generate_instruction("SOUT","nil")
         return output
 
 # Assign -> <Identifier> = <Expression>;
 def assign(lex):
     output = ""
     if lex.getCurrent()[0] == "Identifier":
-        # TODO SAVE TOKEN HERE (SAVE ID ID=....)
+        # TODO SAVE TOKEN HERE FOR LATER USE
         save = lex.getCurrent()
         output += "<Assign> -> Identifier = <Expression>;\n"
         lex.goNext()
@@ -368,11 +397,14 @@ def assign(lex):
         output += lex.current_token_header()
         output += expression(lex)
         # TODO GENERATE INSTURUCTION HERE
-        dict[save[1]] = mem_address 
-        print(dict[save[1]])
-
+        global mem_address
+        if(identifiers[save[1]]):
+            pass
+        else:
+            identifiers[save[1]] = mem_address 
+            mem_address+=1
         generate_instruction("POPM",get_Address(save[1]))
-        print("xxx")
+
         if lex.current[1] != ";":
             raise Exception("Error in assign()")
         lex.goNext()
@@ -395,14 +427,25 @@ def expresssion_prime(lex):
     output = ""
     if lex.getCurrent()[1] in {"-", "+"}:
         if lex.getCurrent()[1] == "-":
+            # TODO
+            # generate_instruction("S","nil")
             output += "<Expression Prime> -> - <Term><Expression Prime>\n"
         else:
+            # TODO
+            # generate_instruction("A","nil")
             output += "<Expression Prime> -> + <Term><Expression Prime>\n"
         lex.goNext()
         output += lex.current_token_header()
         output += term(lex)
-        # TODO
-        generate_instruction("A","nil")
+        if lex.getCurrent()[1] == "-":
+            # TODO
+            generate_instruction("S","nil")
+            # output += "<Expression Prime> -> - <Term><Expression Prime>\n"
+        else:
+            # TODO
+            generate_instruction("A","nil")
+            # output += "<Expression Prime> -> + <Term><Expression Prime>\n"
+
         output += expresssion_prime(lex)
         return output
     else:
@@ -423,13 +466,17 @@ def term_prime(lex):
     output = ""
     if lex.getCurrent()[1] in {"*", "/"}:
         if lex.getCurrent()[1] == "/":
+            # TODO
+            generate_instruction("D","nil")
             output += "<Term Prime> -> /<Factor><Term Prime>\n"
         else:
+            # TODO
+            generate_instruction("M","nil")
             output += "<Term Prime> -> *<Factor><Term Prime>\n"
         lex.goNext()
         output += lex.current_token_header()
         output += factor(lex)
-        generate_instruction("A","nil")
+        # generate_instruction("A","nil")
         output += term_prime(lex)
         return output
     else:
@@ -465,8 +512,8 @@ def primary(lex):
         if current[0] in {"Integer","Real"}:
             output = f"<Primary> -> <{current[0]}>\n"
             global mem_address
-            generate_instruction("PUSHM",mem_address)
-            mem_address+=1
+            generate_instruction("PUSHI",current[1])
+            # mem_address+=1
         elif current[1] in {"true","false"}:
             output = f"<Primary> -> <{current[1]}>\n"
         else: raise Exception("Not Integer | Real | true | false")
@@ -542,7 +589,19 @@ def scan(lex):
             raise Exception("Error in scan() - Expected '(' after 'scan'")
         lex.goNext()
         output += lex.current_token_header()
-        output += ids(lex)
+        # TODO
+        if lex.current[0] == "Identifier":
+            if identifiers[lex.current[1]]:
+                generate_instruction("SIN","")
+                generate_instruction("POPM",identifiers[lex.current[1]])
+                lex.goNext()
+                output += lex.current_token_header()
+            else:
+                print("ERROR")
+                raise Exception("")
+        else:
+            raise Exception("Expected Identifier")
+        # output += ids(lex)
         if lex.current[1] != ")":
             raise Exception("Error in scan() - Expected ')' after identifier")
         lex.goNext()
@@ -612,6 +671,10 @@ def while_rule(lex):
     output="<While> -> while ( <Condition>  )  <Statement>  endwhile"
     if lex.current[1] != "while":
         raise Exception("Error in while() - Expected while keyword")
+    # TODO
+    Ar = instr_address
+    # jumpstack.append(Ar)
+    generate_instruction("LABEL","nil")
     output+=lex.goNext()
     if lex.current[1] != "(":
         raise Exception("Error in while() - (")
@@ -621,6 +684,9 @@ def while_rule(lex):
         raise Exception("Error in while() - )")
     output+=lex.goNext()
     output+=statement(lex)
+    # TODO
+    generate_instruction("JUMP",Ar)
+    back_patch(instr_address)
     if lex.current[1] != "endwhile":
         raise Exception("Error in while() - Expected endwhile keyword")
     output+=lex.goNext()
@@ -631,10 +697,31 @@ def condition(lex):
     output="<Condition> -> <Expression> <Relop> <Expression>\n"
     
     output+=expression(lex)
-    
+    op = lex.current[1]
+
     output+=relop(lex)
     
     output+=expression(lex)
+    # TODO
+    match op:
+        case "<":
+            generate_instruction("LES",'nil')
+            jumpstack.append(instr_address)
+            generate_instruction("JUMP0","nil")
+        case ">":
+            generate_instruction("GRT",'nil')
+            jumpstack.append(instr_address)
+            generate_instruction("JUMP0","nil")
+        case "==":
+            generate_instruction("EQU",'nil')
+            jumpstack.append(instr_address)
+            generate_instruction("JUMP0","nil")
+        case "!=":
+            generate_instruction("NEQ",'nil')
+            jumpstack.append(instr_address)
+            generate_instruction("JUMP0","nil")
+        case _:
+            pass
     
     return output
 # <If> -> if  ( <Condition>  ) <Statement>    <If Prime>
@@ -688,17 +775,19 @@ def syntax_analyzer(input_file,output_file):
     try:
         lexer=Lexer(lexical_analyzer(input_file))
         output = rat24s(lexer)
-        print(output)
+        # print(output)
+        print("------SYNTAX ANALYZER COMPLETED WITH NO ERRORS -------")
         with open(output_file, 'w') as file:
             file.write(output)
             file.close()
         global inst
-        print(inst)
+        # print(inst)
         for x in inst:
             if x:
-                print(f'{x[0]} {x[1]} {x[2]}')
-            else:
-                print('-')
+                print(f'{x[0]}'.ljust(2)+f' {x[1]}'.ljust(9),end='')
+                print(f'{x[2]}' if x[2]!='nil'else '')
+            # else:
+            #     print()
     except Exception as e:
         print(e)
 

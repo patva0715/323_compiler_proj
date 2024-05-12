@@ -3,10 +3,39 @@ Token: Separator                 Lexeme: $
 Token: Separator                 Lexeme: $
 <Opt Function Definitions> -> <Empty>
 <Empty> -> Epsilon
+Token: Keyword                   Lexeme: integer
+<Opt Declaration List> -> <Declaration List>
+<Declaration> -> <Qualifier><IDs>
+<Qualifier> -> integer
+Token: Identifier                Lexeme: i
+<IDs> -> <Identifier> <IDs Prime>
+Token: Separator                 Lexeme: ,
+<IDs Prime> -> <IDs>
+Token: Identifier                Lexeme: max
+<IDs> -> <Identifier> <IDs Prime>
+Token: Separator                 Lexeme: ,
+<IDs Prime> -> <IDs>
+Token: Identifier                Lexeme: sum
+<IDs> -> <Identifier> <IDs Prime>
+Token: Separator                 Lexeme: ;
+<IDs Prime> -> Epsilon
 Token: Separator                 Lexeme: $
-<Opt Declaration List> -> <Empty>
-<Empty> -> Epsilon
-Token: Identifier                Lexeme: x
+<Declaration List Prime> -> Epsilon
+Token: Identifier                Lexeme: sum
+<Statement List> -> <Statement><Statement List Prime>
+<Statement> -> <Assign>
+<Assign> -> Identifier = <Expression>;
+Token: Operator                  Lexeme: =
+Token: Integer                   Lexeme: 0
+<Expression> -> <Term><Expression Prime>
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Integer>
+Token: Separator                 Lexeme: ;
+<Term Prime> -> Epsilon
+<Expression Prime> -> Epsilon
+Token: Identifier                Lexeme: i
+<Statement List Prime> -> <Statement List>
 <Statement List> -> <Statement><Statement List Prime>
 <Statement> -> <Assign>
 <Assign> -> Identifier = <Expression>;
@@ -16,21 +45,112 @@ Token: Integer                   Lexeme: 1
 <Term> -> <Factor><Term Prime>
 <Factor> -> <Primary>
 <Primary> -> <Integer>
+Token: Separator                 Lexeme: ;
+<Term Prime> -> Epsilon
+<Expression Prime> -> Epsilon
+Token: Keyword                   Lexeme: scan
+<Statement List Prime> -> <Statement List>
+<Statement List> -> <Statement><Statement List Prime>
+<Statement> -> <Scan>
+<Scan> -> scan(<IDs>);
+Token: Separator                 Lexeme: (
+Token: Identifier                Lexeme: max
+Token: Separator                 Lexeme: )
+Token: Separator                 Lexeme: ;
+Token: Keyword                   Lexeme: while
+<Statement List Prime> -> <Statement List>
+<Statement List> -> <Statement><Statement List Prime>
+<Statement> -> <While>
+<While> -> while ( <Condition>  )  <Statement>  endwhileToken: Separator                 Lexeme: (
+Token: Identifier                Lexeme: i
+<Condition> -> <Expression> <Relop> <Expression>
+<Expression> -> <Term><Expression Prime>
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Identifier>
+Token: Operator                  Lexeme: ==
+<Term Prime> -> Epsilon
+<Expression Prime> -> Epsilon
+<Relop> -> ==
+Token: Identifier                Lexeme: max
+<Expression> -> <Term><Expression Prime>
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Identifier>
+Token: Separator                 Lexeme: )
+<Term Prime> -> Epsilon
+<Expression Prime> -> Epsilon
+Token: Separator                 Lexeme: {
+<Compound>> -> <Compound>
+<Compound> -> {<Statement List>}
+Token: Identifier                Lexeme: sum
+<Body> -> {<Statement List>}
+<Statement List> -> <Statement><Statement List Prime>
+<Statement> -> <Assign>
+<Assign> -> Identifier = <Expression>;
+Token: Operator                  Lexeme: =
+Token: Identifier                Lexeme: sum
+<Expression> -> <Term><Expression Prime>
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Identifier>
 Token: Operator                  Lexeme: +
 <Term Prime> -> Epsilon
 <Expression Prime> -> + <Term><Expression Prime>
-Token: Integer                   Lexeme: 2
+Token: Identifier                Lexeme: i
 <Term> -> <Factor><Term Prime>
 <Factor> -> <Primary>
-<Primary> -> <Integer>
-Token: Operator                  Lexeme: *
-<Term Prime> -> *<Factor><Term Prime>
-Token: Integer                   Lexeme: 3
+<Primary> -> <Identifier>
+Token: Separator                 Lexeme: ;
+<Term Prime> -> Epsilon
+<Expression Prime> -> Epsilon
+Token: Identifier                Lexeme: i
+<Statement List Prime> -> <Statement List>
+<Statement List> -> <Statement><Statement List Prime>
+<Statement> -> <Assign>
+<Assign> -> Identifier = <Expression>;
+Token: Operator                  Lexeme: =
+Token: Identifier                Lexeme: i
+<Expression> -> <Term><Expression Prime>
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Identifier>
+Token: Operator                  Lexeme: +
+<Term Prime> -> Epsilon
+<Expression Prime> -> + <Term><Expression Prime>
+Token: Integer                   Lexeme: 1
+<Term> -> <Factor><Term Prime>
 <Factor> -> <Primary>
 <Primary> -> <Integer>
 Token: Separator                 Lexeme: ;
 <Term Prime> -> Epsilon
 <Expression Prime> -> Epsilon
+Token: Separator                 Lexeme: }
+<Statement List Prime> -> <Empty>
+<Empty> -> Epsilon
+Token: Keyword                   Lexeme: endwhile
+Token: Keyword                   Lexeme: print
+<Statement List Prime> -> <Statement List>
+<Statement List> -> <Statement><Statement List Prime>
+<Statement> -> <Print>
+<Print> -> print(<Expression>)
+Token: Separator                 Lexeme: (
+Token: Identifier                Lexeme: sum
+<Expression> -> <Term><Expression Prime>
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Identifier>
+Token: Operator                  Lexeme: +
+<Term Prime> -> Epsilon
+<Expression Prime> -> + <Term><Expression Prime>
+Token: Identifier                Lexeme: max
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Identifier>
+Token: Separator                 Lexeme: )
+<Term Prime> -> Epsilon
+<Expression Prime> -> Epsilon
+Token: Separator                 Lexeme: ;
 Token: Separator                 Lexeme: $
 <Statement List Prime> -> <Empty>
 <Empty> -> Epsilon
