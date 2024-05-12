@@ -1,0 +1,17 @@
+$ 
+function max(a integer, b integer) { 
+    if (a > b) { 
+        return a; 
+    } else {
+        return b;
+    }
+    endif
+} 
+$
+integer result;
+$ 
+a = 10;
+scan(b);
+print(max(a, b));
+
+$ 

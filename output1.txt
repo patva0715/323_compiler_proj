@@ -1,0 +1,39 @@
+Token: Separator                 Lexeme: $
+<Rat24S> -> $ <Opt Function Definitions>  $ <Opt Declaration List>  $ <Statement List>  $
+Token: Separator                 Lexeme: $
+<Opt Function Definitions> -> <Empty>
+<Empty> -> Epsilon
+Token: Separator                 Lexeme: $
+<Opt Declaration List> -> <Empty>
+<Empty> -> Epsilon
+Token: Identifier                Lexeme: x
+<Statement List> -> <Statement><Statement List Prime>
+<Statement> -> <Assign>
+<Assign> -> Identifier = <Expression>;
+Token: Operator                  Lexeme: =
+Token: Integer                   Lexeme: 1
+<Expression> -> <Term><Expression Prime>
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Integer>
+Token: Operator                  Lexeme: +
+<Term Prime> -> Epsilon
+<Expression Prime> -> + <Term><Expression Prime>
+Token: Integer                   Lexeme: 2
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Integer>
+Token: Operator                  Lexeme: *
+<Term Prime> -> *<Factor><Term Prime>
+Token: Integer                   Lexeme: 3
+<Factor> -> <Primary>
+<Primary> -> <Integer>
+Token: Separator                 Lexeme: ;
+<Term Prime> -> Epsilon
+<Expression Prime> -> Epsilon
+Token: Separator                 Lexeme: $
+<Statement List Prime> -> <Empty>
+<Empty> -> Epsilon
+
+| ~~~        End of File Reached      ~~~ |
+| ~~~ Syntax Analyzer Found No Errors ~~~ |

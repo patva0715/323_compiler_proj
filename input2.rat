@@ -1,0 +1,12 @@
+$
+[* 
+function foo (a integer){
+    print(a);
+} *]
+$
+integer x,y;
+$
+x = 10;
+y = 10 + 2;
+if ( 1>2 ) print(x*y); endif
+$

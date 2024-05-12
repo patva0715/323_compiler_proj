@@ -1,0 +1,103 @@
+Token: Separator                 Lexeme: $
+<Rat24S> -> $ <Opt Function Definitions>  $ <Opt Declaration List>  $ <Statement List>  $
+Token: Separator                 Lexeme: $
+<Opt Function Definitions> -> <Empty>
+<Empty> -> Epsilon
+Token: Keyword                   Lexeme: integer
+<Opt Declaration List> -> <Declaration List>
+<Declaration> -> <Qualifier><IDs>
+<Qualifier> -> integer
+Token: Identifier                Lexeme: x
+<IDs> -> <Identifier> <IDs Prime>
+Token: Separator                 Lexeme: ,
+<IDs Prime> -> <IDs>
+Token: Identifier                Lexeme: y
+<IDs> -> <Identifier> <IDs Prime>
+Token: Separator                 Lexeme: ;
+<IDs Prime> -> Epsilon
+Token: Separator                 Lexeme: $
+<Declaration List Prime> -> Epsilon
+Token: Identifier                Lexeme: x
+<Statement List> -> <Statement><Statement List Prime>
+<Statement> -> <Assign>
+<Assign> -> Identifier = <Expression>;
+Token: Operator                  Lexeme: =
+Token: Integer                   Lexeme: 10
+<Expression> -> <Term><Expression Prime>
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Integer>
+Token: Separator                 Lexeme: ;
+<Term Prime> -> Epsilon
+<Expression Prime> -> Epsilon
+Token: Identifier                Lexeme: y
+<Statement List Prime> -> <Statement List>
+<Statement List> -> <Statement><Statement List Prime>
+<Statement> -> <Assign>
+<Assign> -> Identifier = <Expression>;
+Token: Operator                  Lexeme: =
+Token: Integer                   Lexeme: 10
+<Expression> -> <Term><Expression Prime>
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Integer>
+Token: Operator                  Lexeme: +
+<Term Prime> -> Epsilon
+<Expression Prime> -> + <Term><Expression Prime>
+Token: Integer                   Lexeme: 2
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Integer>
+Token: Separator                 Lexeme: ;
+<Term Prime> -> Epsilon
+<Expression Prime> -> Epsilon
+Token: Keyword                   Lexeme: if
+<Statement List Prime> -> <Statement List>
+<Statement List> -> <Statement><Statement List Prime>
+<Statement> -> <If>
+<If> -> if (<Condition>) <Statement> <If Prime>
+Token: Separator                 Lexeme: (
+Token: Integer                   Lexeme: 1
+<Condition> -> <Expression> <Relop> <Expression>
+<Expression> -> <Term><Expression Prime>
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Integer>
+Token: Operator                  Lexeme: >
+<Term Prime> -> Epsilon
+<Expression Prime> -> Epsilon
+<Relop> -> >
+Token: Integer                   Lexeme: 2
+<Expression> -> <Term><Expression Prime>
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Integer>
+Token: Separator                 Lexeme: )
+<Term Prime> -> Epsilon
+<Expression Prime> -> Epsilon
+Token: Keyword                   Lexeme: print
+<Statement> -> <Print>
+<Print> -> print(<Expression>)
+Token: Separator                 Lexeme: (
+Token: Identifier                Lexeme: x
+<Expression> -> <Term><Expression Prime>
+<Term> -> <Factor><Term Prime>
+<Factor> -> <Primary>
+<Primary> -> <Identifier>
+Token: Operator                  Lexeme: *
+<Term Prime> -> *<Factor><Term Prime>
+Token: Identifier                Lexeme: y
+<Factor> -> <Primary>
+<Primary> -> <Identifier>
+Token: Separator                 Lexeme: )
+<Term Prime> -> Epsilon
+<Expression Prime> -> Epsilon
+Token: Separator                 Lexeme: ;
+Token: Keyword                   Lexeme: endif
+<If Prime> -> endif
+Token: Separator                 Lexeme: $
+<Statement List Prime> -> <Empty>
+<Empty> -> Epsilon
+
+| ~~~        End of File Reached      ~~~ |
+| ~~~ Syntax Analyzer Found No Errors ~~~ |
