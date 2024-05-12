@@ -1,5 +1,5 @@
 from    lexical_analyzer import lexical_analyzer
-from util import *
+
 import sys
 
 identifiers={}
@@ -413,8 +413,8 @@ def expression(lex):
 # Expression' = +Term  Expression' | -Term  Expression' | Epsilon
 def expresssion_prime(lex):
     output = ""
-    print(lex.getCurrent())
-    print("xxx")
+    # print(lex.getCurrent())
+    # print("xxx")
     if lex.getCurrent()[1] in {"-", "+"}:
         if lex.getCurrent()[1] == "-":
             # TODO
@@ -752,15 +752,20 @@ def if_prime(lex):
     try:
         if lex.current[1] != "else":
             raise Exception("Error in if_prime() -> Expected an 'else'")
+        generate_instruction("LABEL","nil")
         output += "<If'> -> else <Statement> endif\n"
         lex.goNext()
         output += lex.current_token_header()
         output += statement(lex)
         if lex.current[1] != "endif":
             raise Exception("Error in if_prime() -> Expected an 'endif'")
+        generate_instruction("LABEL","nil")
         output += lex.goNext()
         return output
     except:
+        if lex.current[1]!='endif':
+            print("Error - Expected endif keyword")
+            raise Exception('Error - Expected endif keyword')
         output += "<If Prime> -> endif\n"
         # TODO
         generate_instruction("LABEL","nil")
@@ -775,20 +780,48 @@ def syntax_analyzer(input_file,output_file):
         lexer=Lexer(lexical_analyzer(input_file))
         output = rat24s(lexer)
         # print(output)
-        print("------SYNTAX ANALYZER COMPLETED WITH NO ERRORS -------")
-        with open(output_file, 'w') as file:
-            file.write(output)
-            file.close()
+        print("------ PARSED WITH NO ERRORS -------")
         global inst
-        # print(inst)
-        for x in inst:
-            if x:
-                print(f'{x[0]}'.ljust(2)+f' {x[1]}'.ljust(9),end='')
-                print(f'{x[2]}' if x[2]!='nil'else 'nil')
-            # else:
-            #     print()
+        with open(output_file, 'w') as file:
+            file.write("------PARSED WITH NO ERRORS -------")
+            file.write("----------------\n")
+            file.write("# Operator  Operand\n")
+            
+            # file.write(output)
+            for x in inst:
+                if x:
+                    file.write(f'{x[0]}'.ljust(3)+f' {x[1]}'.ljust(8))
+                    file.write(f'{x[2]}'.rjust(5) if x[2]!='nil'else '')
+                    file.write('\n')
+                    print(f'{x[0]}'.ljust(3)+f' {x[1]}'.ljust(8),end='')
+                    print(f'{x[2]}'.rjust(5) if x[2]!='nil'else '')
+            file.write("\nIdentifier    Memory Address\n")
+            print("\nIdentifier    Memory Address\n")
+            for x in identifiers.keys():
+                print(f"{x}".ljust(14),end="")
+                print(f"{identifiers[x]}".ljust(14))
+            file.write("--------- NO ERRORS --------")
+            print("-------- NO ERRORS -------")
+            file.close()
+
+
     except Exception as e:
-        print(e)
+        try:
+            with open(output_file, 'w') as file:
+                file.write("------   ERROR ERROR ERROR   -------\n")
+                # file.write(output)
+                for x in inst:
+                    if x:
+                        file.write(f'{x[0]}'.rjust(2)+f' {x[1]}'.rjust(8))
+                        file.write(f'{x[2]}'.rjust(5) if x[2]!='nil'else '')
+                        file.write('\n')
+                        print(f'{x[0]}'.rjust(2)+f' {x[1]}'.ljust(8),end='')
+                        print(f'{x[2]}'.rjust(5) if x[2]!='nil'else '')
+                print("\n-------- ERROR ENCOUNTERED ----------\n")
+                file.write("\n-------- ERROR ENCOUNTERED ----------")
+                file.close()
+        except Exception as e:
+            print(e)
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
